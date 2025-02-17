@@ -5,44 +5,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.2/addons/p5.sound.min.js" integrity="sha512-WzkwpdWEMAY/W8WvP9KS2/VI6zkgejR4/KTxTl4qHx0utqeyVE0JY+S1DlMuxDChC7x0oXtk/ESji6a0lP/Tdg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   </head>
   <body>
-  let mic=new p5.AudioIn();// guarda a la variable mic una entrada de audio de p5.js
     <script>
-function setup() {
+let mic;
+     
+    
+      function setup() {
   createCanvas(windowWidth,windowHeight);
-mic.start();// activa el micròfon
+        mic=new p5.AudioIn();// guarda a la variable mic una entrada de audio de p5.js
+        mic.start();// activa el micròfon
+}
 function draw() {
-  background(0, 255, 155);
-  let vol=mic.getLevel()
-  let h=map(vol,0,1,0,400);
-  fill(217, 190, 150);
+  let vol=mic.getLevel();
+  let h=map(vol,0,1,0,800);
+  background(0, 255-h, 155);
+  fill(217, 190+h, 150);
   ellipse(windowWidth/2,windowHeight/2,300,300);
-  fill(42, 31, 13);
+  fill(42, 31-h, 13+h);
   ellipse(windowWidth/2-70,windowHeight/2-60,50,50);
   ellipse(windowWidth/2+70,windowHeight/2-60,50,50);
-  arc(windowWidth/2,windowHeight/2+90,100,30+h,0,PI);
-}
-    </script>
-</body>
-</html>
-
-<html>
-  <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.2/p5.min.js" integrity="sha512-1YMgn4j8cIL91s14ByDGmHtBU6+F8bWOMcF47S0cRO3QNm8SKPNexy4s3OCim9fABUtO++nJMtcpWbINWjMSzQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.2/addons/p5.sound.min.js" integrity="sha512-WzkwpdWEMAY/W8WvP9KS2/VI6zkgejR4/KTxTl4qHx0utqeyVE0JY+S1DlMuxDChC7x0oXtk/ESji6a0lP/Tdg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  </head>
-  <body>
-let mic 
-  <script>
-function setup() {
-  createCanvas(windowWidth,windowHeight);
-}
-function draw() {
-  background("orange");
-  fill(255, 51, 51);
-  ellipse(windowWidth/2,windowHeight/2,300,300);
-  fill(35, 27, 6);
-  ellipse(windowWidth/2-60,windowHeight/2-60,50,50);
-  ellipse(windowWidth/2-60,windowHeight/2-60,50,50);
+  arc(windowWidth/2,windowHeight/2+90,100,50+h,0,PI);
 }
     </script>
 </body>
