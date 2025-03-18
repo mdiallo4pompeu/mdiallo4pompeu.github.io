@@ -7,7 +7,9 @@
   </head>
   <body>
     <script>
-let mic;
+ let t = 0;
+      // Declara i inicialitza la variable 't', que servirà per crear un moviment suau amb 'noise()'.
+      let mic;
       let temblar;
     let sinus;//creem una variable que es diu sinus
       let cosinus;
@@ -17,6 +19,20 @@ let mic;
         mic.start();// activa el micròfon
 }
 function draw() {
+  
+        t += 0.01;
+        // Incrementa la variable 't' per fer que el 'noise()' canviï progressivament.
+
+        let noise1 = noise(t) * 100;
+        // Calcula la posició X del centre de la cara.
+        // width / 2: Posa el centre a la meitat de l'amplada del canvas.
+        // noise(t): Funció 'noise' genera valors suaus entre 0 i 1, donant moviment orgànic.
+        // * 100: Amplifica el moviment.
+        // - 50: Centra el moviment al voltant de la posició original.
+
+        let noise2 = noise(t + 200) * 255;
+        // Calcula la posició Y del centre de la cara amb el mateix patró.
+        // noise(t + 100): Utilitza un desplaçament (+100) perquè X i Y siguin independents.
   temblar=random(10,50);
  sinus=sin(frameCount * 0.1);//la variable sinus crea numeros entre -1 i +1
    cosinus=cos(frameCount * 0.1);//la variable sinus crea numeros entre -1 i +1
@@ -28,9 +44,9 @@ function draw() {
 //entre 0 50 
   let vol=mic.getLevel();
   let h=map(vol,0,1,0,800);
-  background(movsinus, 255-movsinus,0);// color de fons
-  fill(6, 13, 35);// color cara
-  ellipse(windowWidth/2,windowHeight/2,300+movsinus,300+movsinus);// cara
+  background(255-noise, 78, noise2);// color de fons
+  fill(87, 34+h, 102);// color cara
+  ellipse(mouseX/2,mouseY/2,300+noise1,300+noise1);// cara
   // windowWidth/2 significa que el centre de la cara coincideix amb el centre de la finestra
   // windowHeight/2 significa el centre de la cara en alçada i coincideix amb el centre de la cara
   // el primer que hi ha entre parentesis és diu paramètre y es la posició de X y del centre de la cara
@@ -39,14 +55,15 @@ function draw() {
   // el quart és l'alçada de la cara
   // temblar esta sumat a la amplada i alçada de la cara i canviara aleatoriament entre 10-50 pixels
   fill(181-movcosinus*3, 203+h*2, 199-movsinus*4);// color ulls ull dret
-  ellipse(windowWidth/2-70,windowHeight/2-60-movsinus,50-h,50-h);// ull dret
+  ellipse(mouseX/2-70,mouseY/2-60-movsinus,50-h,50-h*noise2);// ull dret
   fill(movsinus*5,255-movcosinus*5,100+movsinus*3);
-  ellipse(windowWidth/2+70,windowHeight/2-60-movcosinus,50,50+h);// ull esquerra
+  ellipse(mouseX/2+70,mouseY/2-60-movcosinus,50,50+h*noise2);// ull esquerra
   fill(movsinus*5,180-movsinus*5,127+movsinus*2);
-  arc(windowWidth/2,windowHeight/2+90,100,50+h,0,PI);// boca
+  arc(mouseX/2,mouseY/2+90,100,50+h,0,PI);// boca
   
 }
-      console.log(h);
+  
     </script>
 </body>
 </html>
+
