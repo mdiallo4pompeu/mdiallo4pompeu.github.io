@@ -33,7 +33,7 @@ function draw() {
 //entre 0 50 
   let vol=mic.getLevel();
   let h=map(vol,0,1,0,800);
-  background(movsinus, 255-movsinus,0);// color de fons
+  background(bgColor);// color de fons
   fill(6, 13, 35);// color cara
   ellipse(windowWidth/2,windowHeight/2,300+movsinus,300+movsinus);// cara
   // windowWidth/2 significa que el centre de la cara coincideix amb el centre de la finestra
@@ -65,6 +65,12 @@ function draw() {
         {
           smile=!smile;}
       }
+      /* Funció per canviar el color de fons:
+       Utilitza random() per generar components RGB aleatoris dins d'un interval.
+       Aquesta funció es crida en prémer el botó "Canvia Fons". */
+    function changeBackground() {
+      bgColor = color(random(100, 255), random(100, 255), random(100, 255));
+    }
     </script>
 </body>
 </html>
