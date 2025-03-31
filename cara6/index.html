@@ -66,8 +66,10 @@ function draw() {
   fill(255, 255, 255);//color blanc de les ales 
   ellipse(60,40,25,25);//ala blanca de la dreta
   ellipse(40,60,25,25);//ala blanca de la esquerra
-  line(windowWidth/2-100,windowHeight/2-130,windowWidth/2-10,windowHeight/2-110);
-  arc(windowWidth/2+100,windowHeight/2-130,80,30+h,PI,0);// cella
+  strokeWeight(5);
+  noFill();
+  line(windowWidth/2-100,windowHeight/2-100,windowWidth/2-10,windowHeight/2-110);
+  arc(windowWidth/2+100,windowHeight/2-100,80,30+h,PI,0);// cella
   
 }
        /* Funció per canviar el color de fons:
