@@ -153,14 +153,42 @@
       switch (dominant) {
         case 'happy':
           stroke(255,200,0); // groc
-          beginShape();
-          for (let a = 0; a < TWO_PI; a += PI/8) {
-            let r = 100 + 25 * sin(a * 8);
-            let x = VIRTUAL_W/2 + r * cos(a);
-            let y = VIRTUAL_H/2 + r * sin(a);
-            vertex(x, y); // vèrtex positiu
-          }
-          endShape(CLOSE);
+          beginShape();//Ull esquerra
+vertex(351, 160.1875);
+vertex(319, 144.1875);
+vertex(296, 131.1875);
+vertex(274, 119.1875);
+vertex(250, 111.1875);
+vertex(213, 100.1875);
+vertex(174, 96.1875);
+vertex(138, 91.1875);
+vertex(122, 93.1875);
+vertex(106, 97.1875);
+vertex(79, 101.1875);
+vertex(62, 103.1875);
+vertex(44, 109.1875);
+vertex(27, 115.1875);
+vertex(35, 126.1875);
+vertex(46, 130.1875);
+vertex(62, 136.1875);
+vertex(79, 148.1875);
+vertex(91, 152.1875);
+vertex(111, 158.1875);
+vertex(135, 167.1875);
+vertex(165, 174.1875);
+vertex(182, 175.1875);
+vertex(204, 177.1875);
+vertex(225, 178.1875);
+vertex(253, 177.1875);
+vertex(274, 175.1875);
+vertex(290, 174.1875);
+vertex(304, 173.1875);
+vertex(325, 170.1875);
+vertex(342, 165.1875);
+vertex(348, 163.1875);
+vertex(348, 163.1875);
+vertex(352, 163.1875);
+endShape(CLOSE);
           break;
 
         case 'sad':
