@@ -184,7 +184,7 @@ targetGradientEnd, 0.1);
       setGradient(0, 0, width, height, currentGradientStart,
 currentGradientEnd, 'y');
       push();
-      translate(0);
+      translate(width / 2, height / 2);
       scale(scaleFactor());
       drawKleeCatFace(currentExpression.dominant, smoothIntensity);
       pop();
