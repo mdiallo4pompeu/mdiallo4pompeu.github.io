@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html lang="ca">
 <!--
-  Aquesta pàgina mostra una animació interactiva basada en "Gato y
-Pájaro" de Paul Klee (referència: imatge 1),
-  on el rostre del gat reacciona expressivament segons l'emoció
-detectada a la càmera (somriure, tristesa, etc.).
-  S'utilitza p5.js i ml5.js per a la detecció facial.
+  Gat Expressiu Klee - Asco (disgusted) mejorado:
+  El vómito es más fluido, curvado y natural, con gotas y charco.
+  Totalmente integrado en la versión animada ML5.js con emociones.
 -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gat Expressiu Klee - Art Facial Responsiu</title>
+  <title>Gat Expressiu Klee - Asco mejorado</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/ml5js/Intro-ML-Arts-IMA@ml5-build-10-7-19/ml5_build/ml5.min.js"></script>
   <style>
-    body { margin: 0; padding: 0; overflow: hidden; background: #222; }
+    body { margin: 0; padding: 0; overflow: hidden; background: #222;}
     #loading-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(255,255,255,0.95);
@@ -32,60 +30,55 @@ align-items: center;
   </style>
 </head>
 <body>
-<!--
-  // Paul Klee: "Gato y Pájaro", animat expressivament segons l'emoció
-detectada.
-  // Els ulls, boca i bigotis del gat canvien subtilment segons
-somrius, t'enfades, etc.
-  // El quadrat i la composició segueixen el llenguatge geomètric
-original de l'obra.
--->
   <div id="loading-screen">
     <div class="loader"></div>
     <p>Carregant models...</p>
   </div>
   <script>
-    // Variables globals per gestió facial i visual
+    // === VARIABLES GLOBALS ===
     let faceapi, detections = [], video;
     let modelsReady = false;
     let currentExpression = { dominant: 'neutral', intensity: 0 };
     let smoothIntensity = 0;
-
     let currentGradientStart, currentGradientEnd;
     let targetGradientStart, targetGradientEnd;
 
-    // Paleta inspirada en l'obra de Klee
+    // PALETA KLEE
     const PALETTE = {
-      base: [230,200,130], // fons cremós
-      orange: [216, 131, 40],
-      ochre: [210, 140, 55],
-      red:   [222, 47, 57],
-      rose:  [241, 125, 157],
+      base: [229,189,120],
+      orange: [214, 140, 55],
+      ochre: [220, 120, 44],
+      red:   [210, 37, 57],
+      rose:  [242, 131, 140],
       light: [252, 227, 181],
-      shadow: [110, 60, 30],
-      eyeWhite: [250, 245, 220],
-      eyeGreen: [53, 128, 96],
-      nose: [220, 73, 80],
-      whisker: [100, 80, 70]
+      green: [68, 116, 72],
+      eyeWhite: [244, 240, 224],
+      eyeShadow: [200, 170, 110],
+      whisker: [110, 80, 60, 160],
+      nose: [230, 60, 80],
+      mouth: [190, 40, 60],
+      pink: [242, 145, 163],
+      tear: [115,180,250],
+      vomit: [110,210,90],
+      horn: [200,130,60]
     };
 
-    // Gradient de fons segons emoció
+    // Gradients per emocions
     function getGradientForEmotion(emotion) {
       switch (emotion) {
         case 'happy':
-          return { start: color(252,227,181), end: color(255, 183, 77) };
+          return { start: color(255, 228, 190), end: color(247, 183, 97) };
         case 'sad':
-          return { start: color(173, 216, 230), end: color(130, 142, 186) };
+          return { start: color(180, 180, 205), end: color(120, 160, 210) };
         case 'angry':
-          return { start: color(255, 160, 122), end: color(180, 60, 30) };
+          return { start: color(230, 120, 66), end: color(140, 40, 25) };
         case 'disgusted':
-          return { start: color(189, 210, 156), end: color(153, 180, 90) };
+          return { start: color(199, 210, 156), end: color(153, 180, 90) };
         case 'surprised':
-          return { start: color(255, 240, 210), end: color(205, 155, 205) };
-        case 'fearful':
-          return { start: color(240, 225, 200), end: color(100, 100, 150) };
+          return { start: color(255, 240, 210), end: color(255, 211, 144) };
         default:
-          return { start: color(230,200,130), end: color(210,140,55) };
+          return { start: color(...PALETTE.base), end:
+color(...PALETTE.orange) };
       }
     }
 
@@ -113,19 +106,13 @@ original de l'obra.
       let neutralGrad = getGradientForEmotion('neutral');
       currentGradientStart = neutralGrad.start;
       currentGradientEnd = neutralGrad.end;
-
       video = createCapture(VIDEO);
       video.size(320, 240);
       video.hide();
       video.elt.muted = true;
       video.elt.playsinline = true;
-
-      const options = {
-        withLandmarks: true,
-        withExpressions: true,
-        withDescriptors: false
-      };
-
+      const options = { withLandmarks: true, withExpressions: true,
+withDescriptors: false };
       faceapi = ml5.faceApi(video, options, () => {
         modelsReady = true;
         document.getElementById('loading-screen').style.display = 'none';
@@ -157,10 +144,7 @@ original de l'obra.
         const dominant = Object.keys(expr).reduce((a, b) => expr[a] >
 expr[b] ? a : b);
         if (expr[dominant] > maxIntensity) {
-          currentExpression = {
-            dominant: dominant,
-            intensity: expr[dominant]
-          };
+          currentExpression = { dominant, intensity: expr[dominant] };
           maxIntensity = expr[dominant];
         }
       });
@@ -169,96 +153,268 @@ expr[b] ? a : b);
       targetGradientEnd = grad.end;
     }
 
-    function scaleFactor() {
-      return Math.min(width, height) / 800;
-    }
-
     function draw() {
-      smoothIntensity = lerp(smoothIntensity, currentExpression.intensity, 0.1);
+      smoothIntensity = lerp(smoothIntensity,
+currentExpression.intensity, 0.12);
       if (targetGradientStart && targetGradientEnd) {
         currentGradientStart = lerpColor(currentGradientStart,
-targetGradientStart, 0.1);
+targetGradientStart, 0.10);
         currentGradientEnd = lerpColor(currentGradientEnd,
-targetGradientEnd, 0.1);
+targetGradientEnd, 0.10);
       }
       setGradient(0, 0, width, height, currentGradientStart,
 currentGradientEnd, 'y');
       push();
       translate(width / 2, height / 2);
-      scale(scaleFactor());
+      scale(Math.min(width, height) / 900);
       drawKleeCatFace(currentExpression.dominant, smoothIntensity);
       pop();
       drawHUD();
       drawVideoPreview();
     }
 
-    // Dibuixa el rostre del gat segons Klee, animant també "fearful"
-    function drawKleeCatFace(expr, inten) {
-      let s = 650;
-      let eyeW = 210, eyeH = 75;
-      let eyeY = -80;
-      let eyeOpen = 1.0, eyeTilt = 0;
-      let mouthUp = 0, mouthDown = 0, mouthSmile = 0, mouthFrown = 0,
-mouthWide = 0;
-        eyeOpen = 1.5 + 0.33*inten;
-        mouthWide = 1*inten;
-        mouthUp = 12*inten;
-        whiskerSpread = 1.18 + 0.09*inten;
-        birdColor = [255, 180, 230];
-      } else if(expr === 'fearful') {
-        eyeOpen = 1.33 + 0.22*inten;
-        mouthWide = 0.8*inten;
-        mouthDown = 18*inten;
-        whiskerSpread = 1.03 - 0.04*inten;
-        birdColor = [210, 210, 250];
-      } else { // neutral
-        eyeOpen = 1.06;
-        whiskerSpread = 1.09;
+    // OJOS QUE CAMBIAN CON LA EXPRESIÓN
+    function drawKleeEyes(expr, inten) {
+      // Valores base
+      let eyeLen = 420, eyeHeight = 130, eyeY = -60, eyeDist = 179;
+      let irisW = 54, irisH = 110;
+      let irisColor = PALETTE.green;
+      let eyeTilt = 0;
+      let eyelidHeight = 0;
+      let pupilShift = 0;
+      let pupilW = 11, pupilH = irisH*0.92;
+
+      // Cambios según emoción
+      if(expr === "angry") {
+        eyeTilt = -0.15 * PI * (0.25 + inten);
+        eyeHeight = 77 - 23*inten; // ojo más fino
+        eyelidHeight = 45*inten;
+        pupilShift = -13*inten;
+        pupilW = 14; pupilH = irisH*0.8;
+      }
+      else if(expr === "sad") {
+        eyeTilt = 0.12 * PI * (0.15 + inten);
+        eyeHeight = 90 + 15*inten;
+        eyelidHeight = 0;
+        pupilShift = 14*inten;
+        pupilW = 10; pupilH = irisH*1.12;
+      }
+      else if(expr === "happy") {
+        eyeHeight = 70 - 32*inten; // ojo casi semicerrado
+        eyelidHeight = 60*inten;
+        pupilShift = -3*inten;
+        pupilW = 9; pupilH = irisH*0.7;
+      }
+      else if(expr === "surprised") {
+        eyeHeight = 170 + 80*inten;
+        eyelidHeight = -30*inten;
+        pupilShift = 0;
+        pupilW = 18+7*inten; pupilH = irisH*1.25;
+      }
+      else if(expr === "disgusted") {
+        eyeHeight = 80 + 5*inten;
+        eyelidHeight = 15*inten;
+        pupilShift = 10*inten;
+        pupilW = 11; pupilH = irisH*0.95;
       }
 
-      // FONS GAT
-      noStroke();
-      fill(...PALETTE.base, 240);
-      rectMode(CENTER);
-      rect(0,0,s,s,68);
-
-      // Ombres taronja (simples)
-      // BOCA (varia per expressió)
-      noFill();
-      stroke(130,50,60, 230);
-      strokeWeight(8);
-      beginShape();
-        vertex(-45, noseY+30);
-        if (mouthSmile > 0.05) {
-          bezierVertex(-18, noseY+60, 18, noseY+60, 45, noseY+30);
-          bezierVertex(10, noseY+75, -10, noseY+75, -45, noseY+30);
-        } else if (mouthFrown > 0.05) {
-          bezierVertex(-18, noseY+85, 18, noseY+85, 45, noseY+30);
-          bezierVertex(0, noseY+135, 0, noseY+135, -45, noseY+30);
-        } else if (mouthWide > 0.05) {
-          bezierVertex(-18, noseY+88, 18, noseY+88, 45, noseY+30);
-          bezierVertex(20, noseY+110, -20, noseY+110, -45, noseY+30);
-        } else {
-          bezierVertex(-18, noseY+75, 18, noseY+75, 45, noseY+30);
-        }
-      endShape();
-
-      // BIGOTIS ("whiskers") animats
-      stroke(...PALETTE.whisker, 100);
-      strokeWeight(5);
       for(let i=-1;i<=1;i+=2) {
-        let wx = i*70, wy = noseY+38;
-        line(wx, wy, wx + i*150*whiskerSpread, wy-16);
-        line(wx, wy+18, wx + i*158*whiskerSpread, wy+18+14);
-        line(wx, wy-10, wx + i*138*whiskerSpread, wy-36);
+        push();
+        translate(i*eyeDist, eyeY);
+        rotate(i * eyeTilt);
+
+        // Fondo del ojo
+        fill(...PALETTE.eyeWhite, 255);
+        stroke(...PALETTE.eyeShadow, 110); strokeWeight(5);
+        beginShape();
+          vertex(-eyeLen/2, 0);
+          bezierVertex(-eyeLen/2+60, -eyeHeight*0.7, eyeLen/2-60,
+-eyeHeight*0.7, eyeLen/2, 0);
+          bezierVertex(eyeLen/2-40, eyeHeight*0.60, -eyeLen/2+40,
+eyeHeight*0.60, -eyeLen/2, 0);
+        endShape(CLOSE);
+
+        // Párpado superior (si happy/angry)
+        if(eyelidHeight > 0) {
+          noFill(); stroke(150,100,60,120); strokeWeight(16);
+          arc(0, -eyelidHeight*0.18, eyeLen*0.8, eyelidHeight, PI, 0);
+        }
+
+        // Iris vertical
+        noStroke();
+        fill(...irisColor, 222);
+        ellipse(0, pupilShift, irisW, irisH);
+        fill(0,120,60,140);
+        ellipse(0, pupilShift, pupilW, pupilH);
+        fill(255,255,255,80);
+        ellipse(-9, pupilShift-irisH*0.29, 12,32);
+
+        pop();
       }
     }
 
-    // HUD i previsualització vídeo
+    // Dibuix fidel a Klee, boca O en sorpresa y vómito pictórico mejorado
+    function drawKleeCatFace(expr, inten) {
+      let s = 800;
+      // -- Fons pictòric --
+      noStroke();
+      fill(...PALETTE.base, 249); rectMode(CENTER); rect(0,0,s,s,130);
+      fill(...PALETTE.orange, 100); rect(-s/4, 0, s/2, s*0.67, 80);
+      fill(...PALETTE.ochre, 60); rect(s/4, s/6, s*0.38, s*0.44, 60);
+
+      // -- OJOS SEGÚN EXPRESIÓN --
+      drawKleeEyes(expr, inten);
+
+      // -- Nas triangular, separat de la boca --
+      let noseY = 95, noseW = 70, noseH = 88;
+      fill(...PALETTE.nose, 255);
+      stroke(170,40,60,130); strokeWeight(9);
+      beginShape();
+        vertex(0, noseY-noseH/2);
+        vertex(-noseW/2, noseY+noseH/2);
+        vertex(noseW/2, noseY+noseH/2);
+      endShape(CLOSE);
+
+      // -- Boca geomètrica, separada --
+      let mouthY = 200, mouthW = 166, mouthH = 54;
+      if(expr === "happy") {
+        stroke(...PALETTE.mouth, 180); strokeWeight(11); noFill();
+        // Curva suave, sutil
+        beginShape();
+          vertex(-mouthW/2, mouthY);
+          bezierVertex(-mouthW/3, mouthY+36, mouthW/3, mouthY+36,
+mouthW/2, mouthY);
+        endShape();
+      } else if(expr === "sad") {
+        stroke(...PALETTE.mouth, 180); strokeWeight(11); noFill();
+        // Curva hacia abajo
+        beginShape();
+          vertex(-mouthW/2, mouthY+32);
+          bezierVertex(-mouthW/3, mouthY-8, mouthW/3, mouthY-8,
+mouthW/2, mouthY+32);
+        endShape();
+      } else if(expr === "surprised") {
+        // Boca abierta tipo O
+        stroke(...PALETTE.mouth, 200);
+        fill(255, 240, 240, 170);
+        ellipse(0, mouthY+33, 54, 80);
+        // Sombra interior
+        noFill();
+        stroke(190, 80, 80, 60);
+        ellipse(0, mouthY+33, 36, 54);
+      } else if(expr === "angry") {
+        stroke(...PALETTE.mouth, 180); strokeWeight(12); noFill();
+        beginShape();
+          vertex(-mouthW/2, mouthY);
+          vertex(0, mouthY-38);
+          vertex(mouthW/2, mouthY);
+        endShape();
+      } else if(expr === "disgusted") {
+        // Boca recta
+        stroke(...PALETTE.mouth, 180); strokeWeight(11); noFill();
+        line(-mouthW/2, mouthY, mouthW/2, mouthY);
+
+        // Vómito pictórico MEJORADO: curvas, gotas y charco
+        let vomY = mouthY+15;
+        let vomLen = 100 + 40*inten;
+        let vomSide = 62 + 22*inten;
+
+        // Chorro central
+        noFill();
+        stroke(90, 220, 110, 170);
+        strokeWeight(20);
+        beginShape();
+          vertex(0, vomY);
+          bezierVertex(-10, vomY+vomLen*0.38, 10, vomY+vomLen*0.62, 0,
+vomY+vomLen);
+        endShape();
+
+        // Curvas laterales
+        stroke(120,255,160,120); strokeWeight(9);
+        beginShape();
+          vertex(-14, vomY+12);
+          bezierVertex(-vomSide, vomY+vomLen*0.32, -18,
+vomY+vomLen*0.7, -5, vomY+vomLen+10);
+        endShape();
+        beginShape();
+          vertex(14, vomY+12);
+          bezierVertex(vomSide, vomY+vomLen*0.32, 18, vomY+vomLen*0.7,
+5, vomY+vomLen+10);
+        endShape();
+
+        // Gotas principales
+        noStroke();
+        fill(170,255,120,180);
+        ellipse(-18, vomY+vomLen+12, 20, 10);
+        ellipse(0, vomY+vomLen+19, 28, 14);
+        ellipse(18, vomY+vomLen+12, 18, 9);
+
+        // Gotitas arriba
+        fill(170,255,120,110);
+        ellipse(-9, vomY+vomLen*0.71, 9, 5);
+        ellipse(9, vomY+vomLen*0.76, 9, 5);
+
+        // Charco base
+        fill(150,255,150,130);
+        ellipse(0, vomY+vomLen+28, 45, 15);
+      } else {
+        // Neutral
+        stroke(...PALETTE.mouth, 145); strokeWeight(9); noFill();
+        beginShape();
+          vertex(-mouthW/2, mouthY);
+          vertex(mouthW/2, mouthY);
+        endShape();
+      }
+
+      // -- Coloretes "happy" --
+      if(expr === "happy" && inten > 0.18) {
+        fill(255,100,90,90+120*inten);
+        ellipse(-195,140,82,36); ellipse(195,140,82,36);
+      }
+
+      // -- BIGOTIS --
+      stroke(...PALETTE.whisker); strokeWeight(5);
+      for(let i=-1;i<=1;i+=2) {
+        // superior
+        line(i*mouthW/2, mouthY-5, i*mouthW*1.16, mouthY - 52);
+        // mig
+        line(i*mouthW/2, mouthY+13, i*mouthW*1.22, mouthY + 13);
+        // inferior
+        line(i*mouthW/2, mouthY+29, i*mouthW*1.18, mouthY + 62);
+      }
+
+      // -- CUERNOS pictòrics enfadado --
+      if(expr === "angry" && inten > 0.18) {
+        stroke(...PALETTE.horn); strokeWeight(19+19*inten);
+        // izquierdo
+        line(-190, -240, -320, -360-80*inten);
+        // derecho
+        line(190, -240, 320, -360-80*inten);
+        noStroke();
+      }
+
+      // -- Ocell rosa al front --
+      push();
+      translate(0, -110);
+      rotate(-PI/24);
+      fill(...PALETTE.pink, 170); stroke(190,60,110,100); strokeWeight(3);
+      beginShape();
+        vertex(0,0);
+        bezierVertex(32,2, 44,32, 14,34);
+        bezierVertex(-20,38, -32,18, 0,0);
+      endShape(CLOSE);
+      // cap
+      fill(...PALETTE.pink, 200); ellipse(6,-9,16,17);
+      // bec
+      fill(240,190,110,200); noStroke();
+      triangle(14,-10, 31,-13, 21,-3);
+      pop();
+    }
+
     function drawHUD() {
       const traduccions = {
-        happy: "😃 Feliç",
-        sad: "😢 Trist",
+        happy: "😄 Feliç",
+        sad: "😭 Trist",
         angry: "😡 Enfadat",
         surprised: "😲 Sorprès",
         disgusted: "🤢 Fastiguejat",
@@ -268,13 +424,13 @@ mouthWide = 0;
       const emoticon = traduccions[currentExpression.dominant] || "😐 Neutral";
       noStroke();
       fill(50, 150, 255);
-      textSize(map(width, 500, 1200, 16, 24));
+      textSize(map(width, 500, 1200, 19, 29));
       textAlign(CENTER, TOP);
       text(`${emoticon} (${floor(smoothIntensity * 100)}%)`, width / 2, 20);
     }
 
     function drawVideoPreview() {
-      const previewSize = min(width, height) * 0.15;
+      const previewSize = min(width, height) * 0.13;
       image(
         video,
         width - previewSize - 10,
@@ -283,6 +439,14 @@ mouthWide = 0;
         previewSize
       );
     }
+
+    // Favicon
+    let link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/png';
+    link.href =
+'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABe0lEQVQ4T6XTsUoDQRQG4M8TV1DUQbY2/gKroN5AewkILnU1wC+gSUgJQhBEGJ2FZ9wB2gseK0tXbKSa4h5nA+8z8zm7n7wqVJ9zHj9l8W8eS4Q5LhFVZkh1dqj9gHkB7oG2gH3MUskZtQthvKc5ELJGbU4Y7p9wCkAcf7kY0Gz6ZxkQvYcK3VQdA+Sn0shPqv1Bu0n8sW3gKc8ho2d2IN8nJ1lLZpI1eL1pQ9M6nU2fP8pA7h0rCHGczJ2QJ8nPpVf7jQK2xD/HQ2xKq7w8NQ7xkIb5F+F2zQe7ZLXQAAAABJRU5ErkJggg==';
+    document.head.appendChild(link);
 
     navigator.mediaDevices.getUserMedia({ video: true })
       .catch(err => {
@@ -296,3 +460,4 @@ mouthWide = 0;
   </script>
 </body>
 </html>
+
